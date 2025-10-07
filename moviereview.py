@@ -1,0 +1,99 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPv7gt2AjiWQU4DFDvXoxez",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/hemanth-royal11/movie-review/blob/main/moviereview.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 13,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "uY7DVlE2811p",
+        "outputId": "14276851-3771-4a63-866d-9e6ee3af2679"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "[nltk_data] Downloading package movie_reviews to /root/nltk_data...\n",
+            "[nltk_data]   Package movie_reviews is already up-to-date!\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Accuracy: 79.50%\n",
+            "Enter a movie review: wow\n",
+            "Negative review!\n"
+          ]
+        }
+      ],
+      "source": [
+        "import nltk\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.feature_extraction.text import CountVectorizer\n",
+        "from sklearn.naive_bayes import MultinomialNB\n",
+        "from sklearn.metrics import accuracy_score\n",
+        "nltk.download('movie_reviews')\n",
+        "import random\n",
+        "from nltk.corpus import movie_reviews\n",
+        "documents = [(list(movie_reviews.words(fileid)), category)\n",
+        "             for category in movie_reviews.categories()\n",
+        "             for fileid in movie_reviews.fileids(category)]\n",
+        "random.shuffle(documents)\n",
+        "\n",
+        "data = [\" \".join(words) for words, label in documents]\n",
+        "labels = [1 if label == 'pos' else 0 for words, label in documents]\n",
+        "X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)\n",
+        "vectorizer = CountVectorizer(stop_words='english')\n",
+        "X_train_vec = vectorizer.fit_transform(X_train)\n",
+        "X_test_vec = vectorizer.transform(X_test)\n",
+        "model = MultinomialNB()\n",
+        "model.fit(X_train_vec, y_train)\n",
+        "y_pred = model.predict(X_test_vec)\n",
+        "acc = accuracy_score(y_test, y_pred)\n",
+        "print(f\"Accuracy: {acc * 100:.2f}%\")\n",
+        "def classify_review(review_text):\n",
+        "    lower = review_text.strip().lower()\n",
+        "    positive_keywords = {\"good\", \"great\", \"excellent\", \"awesome\", \"fantastic\", \"nice\"}\n",
+        "    negative_keywords = {\"bad\", \"terrible\", \"awful\", \"poor\", \"boring\", \"worst\"}\n",
+        "    if lower in positive_keywords:\n",
+        "        return 1\n",
+        "    if lower in negative_keywords:\n",
+        "        return 0\n",
+        "    vec = vectorizer.transform([review_text])\n",
+        "    return model.predict(vec)[0]\n",
+        "review = input(\"Enter a movie review: \")\n",
+        "prediction = classify_review(review)\n",
+        "print(\"Positive review!\" if prediction == 1 else \"Negative review!\")\n"
+      ]
+    }
+  ]
+}
